@@ -20,6 +20,7 @@ internal static class ModInfo
 internal class GenePotionSelector : BaseUnityPlugin
 {
   internal static GenePotionSelector Instance { get; private set; }
+  internal static bool DuringGeneMiracle { get; set; }
 
   public void Awake()
   {
