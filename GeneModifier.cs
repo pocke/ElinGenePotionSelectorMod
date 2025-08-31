@@ -29,6 +29,11 @@ public class GeneModifier
     mods.Add(mod);
   }
 
+  public bool hasCandidate()
+  {
+    return featCandidates().Any() || abilityCandidates().Any() || slotCandidates().Any();
+  }
+
   public List<Element> featCandidates()
   {
     int geneSlot = mods.Any() ? mods.Max(m => m.Feat?.source?.geneSlot ?? 1) : 1;

@@ -43,7 +43,7 @@ public static class Patch
       m.AddMod(mod);
       n--;
 
-      if (n == 0)
+      if (n == 0 || !m.hasCandidate())
       {
         // TODO: call tc.Say
         m.SpawnGene();
