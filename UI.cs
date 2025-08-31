@@ -26,7 +26,7 @@ public class SelectorLayer : YKLayer<SelectionLayerData>
 {
   public override void OnLayout()
   {
-    CreateTab<SelectorTab>("Selector", $"{ModInfo.Guid}.selector-tab");
+    CreateTab<SelectorTab>("遺伝子に付与したい特性を選択"._("Select traits to add to the gene"), $"{ModInfo.Guid}.selector-tab");
   }
 }
 
@@ -39,11 +39,13 @@ public class SelectorTab : YKLayout<SelectionLayerData>
       HeaderSmall("フィート"._("Feats"));
       Layer.Data.Feats.ForEach(ele =>
       {
-        Button(ele.Name, () =>
+        var group = Horizontal();
+        group.Button("選択"._("Select"), () =>
         {
           Layer.Close();
           Layer.Data.OnSelect(new GeneModifier.Mod { Feat = ele });
         });
+        group.Text(ele.Name);
       });
     }
 
@@ -52,11 +54,13 @@ public class SelectorTab : YKLayout<SelectionLayerData>
       HeaderSmall("アビリティ"._("Abilities"));
       Layer.Data.Abilities.ForEach(act =>
       {
-        Button(act.act.Name, () =>
+        var group = Horizontal();
+        group.Button("選択"._("Select"), () =>
         {
           Layer.Close();
           Layer.Data.OnSelect(new GeneModifier.Mod { Ability = act });
         });
+        group.Text(act.act.Name);
       });
     }
 
@@ -65,11 +69,13 @@ public class SelectorTab : YKLayout<SelectionLayerData>
       HeaderSmall("部位"._("Body parts"));
       Layer.Data.Slots.GroupBy(s => s.name).Select(s => s.First()).ToList().ForEach(slot =>
       {
-        Button(slot.name, () =>
+        var group = Horizontal();
+        group.Button("選択"._("Select"), () =>
         {
           Layer.Close();
           Layer.Data.OnSelect(new GeneModifier.Mod { Slot = slot });
         });
+        group.Text(slot.name);
       });
     }
   }
