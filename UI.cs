@@ -28,6 +28,11 @@ public class SelectorLayer : YKLayer<SelectionLayerData>
   {
     CreateTab<SelectorTab>("遺伝子に付与したい特性を選択"._("Select traits to add to the gene"), $"{ModInfo.Guid}.selector-tab");
   }
+
+  public override void OnKill()
+  {
+    GenePotionSelector.IsExecuting = false;
+  }
 }
 
 public class SelectorTab : YKLayout<SelectionLayerData>
