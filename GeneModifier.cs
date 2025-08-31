@@ -47,7 +47,10 @@ public class GeneModifier
 
   public List<ActList.Item> abilityCandidates()
   {
-    return chara.ability.list.items.Where(a => !mods.Any(m => m.Ability?.act?.id == a.act.id)).ToList();
+    return chara.ability.list.items
+      // https://github.com/Elin-Modding-Resources/Elin-Decompiled/blob/7517ec09aaec867bffa504b0064b37675851a609/Elin/DNA.cs#L337-L338
+      .Where(a => a.act.source.category == "ability")
+      .Where(a => !mods.Any(m => m.Ability?.act?.id == a.act.id)).ToList();
   }
 
   public List<BodySlot> slotCandidates()
@@ -56,7 +59,8 @@ public class GeneModifier
     {
       return new List<BodySlot>();
     }
-    return chara.body.slots;
+    // https://github.com/Elin-Modding-Resources/Elin-Decompiled/blob/7517ec09aaec867bffa504b0064b37675851a609/Elin/DNA.cs#L357
+    return chara.body.slots.Where(s => s.elementId != 40 && s.elementId != 44).ToList();
   }
 
   public void SpawnGene()
