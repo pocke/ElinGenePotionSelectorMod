@@ -12,7 +12,7 @@ namespace GenePotionSelector;
 public static class Patch
 {
   [HarmonyPrefix, HarmonyPatch(typeof(ActEffect), nameof(ActEffect.GeneMiracle))]
-  public static bool ActEffect_GeneMiracle_Prefix(Chara tc, DNA.Type type)
+  public static bool ActEffect_GeneMiracle_Prefix(Chara tc, Chara c, DNA.Type type)
   {
     if (type != DNA.Type.Default && type != DNA.Type.Superior)
     {
@@ -29,12 +29,12 @@ public static class Patch
     int n = type == DNA.Type.Default ? 1 : 2;
     var m = new GeneModifier(tc, type);
 
-    chooseMod(n, m, tc);
+    chooseMod(n, m, tc, c);
 
     return false;
   }
 
-  private static void chooseMod(int n, GeneModifier m, Chara tc)
+  private static void chooseMod(int n, GeneModifier m, Chara tc, Chara c)
   {
     GenePotionSelector.IsExecuting = true;
 
@@ -45,17 +45,25 @@ public static class Patch
 
       if (n == 0 || !m.hasCandidate())
       {
-        // TODO: call tc.Say
+        // https://github.com/Elin-Modding-Resources/Elin-Decompiled/blob/7517ec09aaec867bffa504b0064b37675851a609/Elin/ActEffect.cs#L2425-L2432
+        if (c == tc)
+        {
+          tc.Say("love_ground", tc);
+        }
+        else
+        {
+          tc.Say("love_chara", c, tc);
+        }
+
         m.SpawnGene();
         GenePotionSelector.IsExecuting = false;
       }
       else
       {
-        chooseMod(n, m, tc);
+        chooseMod(n, m, tc, c);
       }
     };
 
-    // TODO: onCancel
     var layerData = new SelectionLayerData(m.featCandidates(), m.abilityCandidates(), m.slotCandidates(), onSelect);
     YK.CreateLayer<SelectorLayer, SelectionLayerData>(layerData);
   }
