@@ -1,11 +1,5 @@
-using System;
-using System.Collections.Generic;
-using System.Configuration;
-using System.IO;
 using BepInEx;
-using BepInEx.Configuration;
 using HarmonyLib;
-using UnityEngine;
 
 namespace GenePotionSelector;
 
@@ -20,13 +14,14 @@ internal static class ModInfo
 internal class GenePotionSelector : BaseUnityPlugin
 {
   internal static GenePotionSelector Instance { get; private set; }
-  internal static bool DuringGeneMiracle { get; set; }
+  internal static bool IsExecuting { get; set; } = false;
 
   public void Awake()
   {
     Instance = this;
 
-    new Harmony(ModInfo.Guid).PatchAll();
+    var harmony = new Harmony(ModInfo.Guid);
+    harmony.PatchAll();
   }
 
   public static void Log(object message)

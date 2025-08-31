@@ -1,7 +1,10 @@
 using System;
+using System.Collections.Generic;
 using System.Security.Principal;
+using System.Threading.Tasks;
 using HarmonyLib;
 using UnityEngine;
+using YKF;
 
 namespace GenePotionSelector;
 
@@ -9,83 +12,60 @@ namespace GenePotionSelector;
 public static class Patch
 {
   [HarmonyPrefix, HarmonyPatch(typeof(ActEffect), nameof(ActEffect.GeneMiracle))]
-  public static void ActEffect_GeneMiracle_Prefix()
+  public static bool ActEffect_GeneMiracle_Prefix(Chara tc, DNA.Type type)
   {
-    // TODO: Display the selector
+    if (type != DNA.Type.Default && type != DNA.Type.Superior)
+    {
+      return true;
+    }
 
-    GenePotionSelector.Log("GeneMiracle before");
-    GenePotionSelector.DuringGeneMiracle = true;
+    // https://github.com/Elin-Modding-Resources/Elin-Decompiled/blob/72332a1390e68a8de62bca4acbd6ebbaab92257b/Elin/ActEffect.cs#L2362-L2366
+    if (EClass._zone.IsUserZone && !tc.IsPCFactionOrMinion)
+    {
+      Msg.SayNothingHappen();
+      return false;
+    }
+
+    int n = type == DNA.Type.Default ? 1 : 2;
+    var m = new GeneModifier(tc, type);
+
+    chooseMod(n, m, tc);
+
+    return false;
   }
 
-  [HarmonyPostfix, HarmonyPatch(typeof(ActEffect), nameof(ActEffect.GeneMiracle))]
-  public static void ActEffect_GeneMiracle_Postfix()
+  private static void chooseMod(int n, GeneModifier m, Chara tc)
   {
-    GenePotionSelector.Log("GeneMiracle after");
-    GenePotionSelector.DuringGeneMiracle = false;
+    GenePotionSelector.IsExecuting = true;
+
+    Action<GeneModifier.Mod> onSelect = mod =>
+    {
+      m.AddMod(mod);
+      n--;
+
+      if (n == 0)
+      {
+        // TODO: call tc.Say
+        m.SpawnGene();
+        GenePotionSelector.IsExecuting = false;
+      }
+      else
+      {
+        chooseMod(n, m, tc);
+      }
+    };
+
+    // TODO: onCancel
+    var layerData = new SelectionLayerData(m.featCandidates(), m.abilityCandidates(), m.slotCandidates(), onSelect);
+    YK.CreateLayer<SelectorLayer, SelectionLayerData>(layerData);
   }
 
-  [HarmonyPostfix, HarmonyPatch(typeof(DNA), nameof(DNA.Generate))]
-  public static void DNA_Generate_Postfix(DNA __instance, DNA.Type _type)
+  // Prevent updating Act.TC static field during ActThrow.Throw.
+  // Opening a new layer causes mouse move events and they triggers Act.CanPerform.
+  // This method updates Act.TC, and it breaks the Throw method.
+  [HarmonyPrefix, HarmonyPatch(typeof(Act), nameof(Act.CanPerform), new Type[] { typeof(Chara), typeof(Card), typeof(Point) })]
+  public static bool Act_CanPerform_Prefix()
   {
-    if (!GenePotionSelector.DuringGeneMiracle)
-    {
-      return;
-    }
-    GenePotionSelector.Log("DNA.Generate during GeneMiracle");
-
-    var dna = __instance;
-
-    for (int i = dna.vals.Count - 1; 0 <= i; i -= 2)
-    {
-      GenePotionSelector.Log($"Creating Element from {i}");
-      var ele = Element.Create(dna.vals[i - 1], dna.vals[i]);
-
-      switch (ele.source.category)
-      {
-        case "slot":
-        case "feat":
-        case "ability":
-          RemoveVal(i - 1, Cost(ele));
-          break;
-      }
-    }
-
-    // TODO: Add specified slot, feat, or ability
-    //       The following code is just an example
-    var addedEle = Element.Create(6603, 1);
-    AddVal(6603, 1, Cost(addedEle));
-
-
-    dna.CalcCost();
-    dna.CalcSlot();
-
-    void AddVal(int id, int v, int cost)
-    {
-      dna.vals.Add(id);
-      dna.vals.Add(v);
-      dna.cost += Mathf.Max(0, cost);
-    }
-
-    void RemoveVal(int i, int cost)
-    {
-      dna.vals.RemoveAt(i);
-      dna.vals.RemoveAt(i);
-      dna.cost -= cost;
-    }
-
-    int Cost(Element ele)
-    {
-      switch (ele.source.category)
-      {
-        case "slot":
-          return 20;
-        case "feat":
-          return ele.source.cost[0] * 5;
-        case "ability":
-          return 8 + ele.source.cost[0] / 10 * 2;
-        default:
-          throw new Exception("Unexpected category: " + ele.source.category);
-      }
-    }
+    return !GenePotionSelector.IsExecuting;
   }
 }

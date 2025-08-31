@@ -70,6 +70,12 @@
       <EmbedInteropTypes>False</EmbedInteropTypes>
       <Private>False</Private>
     </Reference>
+
+    <Reference Include="YKFramework">
+      <HintPath>$(WorkshopPath)\2135150\3400020753\YKFramework.dll</HintPath>
+      <EmbedInteropTypes>False</EmbedInteropTypes>
+      <Private>False</Private>
+    </Reference>
   </ItemGroup>
 
   <ItemGroup>
