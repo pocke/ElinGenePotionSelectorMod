@@ -82,10 +82,8 @@
     <Content Include="package.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <!--
     <Content Include="preview.jpg">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    -->
   </ItemGroup>
 </Project>
