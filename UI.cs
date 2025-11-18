@@ -10,14 +10,18 @@ public class SelectionLayerData
   public List<Element> Feats { get; }
   public List<ActList.Item> Abilities { get; }
   public List<BodySlot> Slots { get; }
+  public List<Element> Skills { get; }
+  public List<Element> Attributes { get; }
 
   public Action<GeneModifier.Mod> OnSelect { get; }
 
-  public SelectionLayerData(List<Element> feats, List<ActList.Item> abilities, List<BodySlot> slots, Action<GeneModifier.Mod> onSelect)
+  public SelectionLayerData(List<Element> feats, List<ActList.Item> abilities, List<BodySlot> slots, List<Element> skills, List<Element> attributes, Action<GeneModifier.Mod> onSelect)
   {
     Feats = feats;
     Abilities = abilities;
     Slots = slots;
+    Skills = skills;
+    Attributes = attributes;
     OnSelect = onSelect;
   }
 }
@@ -81,6 +85,36 @@ public class SelectorTab : YKLayout<SelectionLayerData>
           Layer.Data.OnSelect(new GeneModifier.Mod { Slot = slot });
         });
         group.Text(slot.name);
+      });
+    }
+
+    if (Layer.Data.Skills.Count > 0)
+    {
+      HeaderSmall("スキル"._("Skills"));
+      Layer.Data.Skills.ForEach(ele =>
+      {
+        var group = Horizontal();
+        group.Button("選択"._("Select"), () =>
+        {
+          Layer.Close();
+          Layer.Data.OnSelect(new GeneModifier.Mod { Skill = ele });
+        });
+        group.Text(ele.Name);
+      });
+    }
+
+    if (Layer.Data.Attributes.Count > 0)
+    {
+      HeaderSmall("属性"._("Attributes"));
+      Layer.Data.Attributes.ForEach(ele =>
+      {
+        var group = Horizontal();
+        group.Button("選択"._("Select"), () =>
+        {
+          Layer.Close();
+          Layer.Data.OnSelect(new GeneModifier.Mod { Attribute = ele });
+        });
+        group.Text(ele.Name);
       });
     }
   }
