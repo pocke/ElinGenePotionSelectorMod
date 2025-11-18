@@ -62,7 +62,7 @@ public static class Patch
       }
     };
 
-    var layerData = new SelectionLayerData(m.featCandidates(), m.abilityCandidates(), m.slotCandidates(), m.skillCandidates(), m.attributeCandidates(), onSelect);
+    var layerData = new SelectionLayerData(m, onSelect);
     YK.CreateLayer<SelectorLayer, SelectionLayerData>(layerData);
   }
 

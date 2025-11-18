@@ -8,21 +8,19 @@ namespace GenePotionSelector;
 
 public class SelectionLayerData
 {
-  public List<Element> Feats { get; }
-  public List<ActList.Item> Abilities { get; }
-  public List<BodySlot> Slots { get; }
-  public List<Element> Skills { get; }
-  public List<Element> Attributes { get; }
-
+  public GeneModifier Modifier { get; }
   public Action<GeneModifier.Mod> OnSelect { get; }
 
-  public SelectionLayerData(List<Element> feats, List<ActList.Item> abilities, List<BodySlot> slots, List<Element> skills, List<Element> attributes, Action<GeneModifier.Mod> onSelect)
+  public List<Element> Feats => Modifier.featCandidates();
+  public List<ActList.Item> Abilities => Modifier.abilityCandidates();
+  public List<BodySlot> Slots => Modifier.slotCandidates();
+  public List<Element> Skills => Modifier.skillCandidates();
+  public List<Element> Attributes => Modifier.attributeCandidates();
+
+
+  public SelectionLayerData(GeneModifier modifier, Action<GeneModifier.Mod> onSelect)
   {
-    Feats = feats;
-    Abilities = abilities;
-    Slots = slots;
-    Skills = skills;
-    Attributes = attributes;
+    Modifier = modifier;
     OnSelect = onSelect;
   }
 }
