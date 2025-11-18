@@ -105,7 +105,7 @@ public class SelectorTab : YKLayout<SelectionLayerData>
 
     if (Layer.Data.Attributes.Count > 0)
     {
-      HeaderSmall("属性"._("Attributes"));
+      HeaderSmall("主能力"._("Attributes"));
       Layer.Data.Attributes.ForEach(ele =>
       {
         var group = Horizontal();
