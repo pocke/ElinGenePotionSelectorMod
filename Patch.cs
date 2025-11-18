@@ -33,6 +33,22 @@ public static class Patch
     return false;
   }
 
+  private static void handleFinish(bool randomVal, GeneModifier m, Chara tc, Chara c)
+  {
+    // https://github.com/Elin-Modding-Resources/Elin-Decompiled/blob/7517ec09aaec867bffa504b0064b37675851a609/Elin/ActEffect.cs#L2425-L2432
+    if (c == tc)
+    {
+      tc.Say("love_ground", tc);
+    }
+    else
+    {
+      tc.Say("love_chara", c, tc);
+    }
+
+    m.SpawnGene();
+    GenePotionSelector.IsExecuting = false;
+  }
+
   private static void chooseMod(GeneModifier m, Chara tc, Chara c)
   {
     GenePotionSelector.IsExecuting = true;
@@ -43,18 +59,7 @@ public static class Patch
 
       if (!m.CanChoose())
       {
-        // https://github.com/Elin-Modding-Resources/Elin-Decompiled/blob/7517ec09aaec867bffa504b0064b37675851a609/Elin/ActEffect.cs#L2425-L2432
-        if (c == tc)
-        {
-          tc.Say("love_ground", tc);
-        }
-        else
-        {
-          tc.Say("love_chara", c, tc);
-        }
-
-        m.SpawnGene();
-        GenePotionSelector.IsExecuting = false;
+        handleFinish(false, m, tc, c);
       }
       else
       {
@@ -62,7 +67,12 @@ public static class Patch
       }
     };
 
-    var layerData = new SelectionLayerData(m, onSelect);
+    Action<bool> onFinish = randomVal =>
+    {
+      handleFinish(randomVal, m, tc, c);
+    };
+
+    var layerData = new SelectionLayerData(m, onSelect, onFinish);
     YK.CreateLayer<SelectorLayer, SelectionLayerData>(layerData);
   }
 

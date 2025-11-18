@@ -10,6 +10,7 @@ public class SelectionLayerData
 {
   public GeneModifier Modifier { get; }
   public Action<GeneModifier.Mod> OnSelect { get; }
+  public Action<bool> OnFinish { get; }
 
   public List<Element> Feats => Modifier.featCandidates();
   public List<ActList.Item> Abilities => Modifier.abilityCandidates();
@@ -18,10 +19,11 @@ public class SelectionLayerData
   public List<Element> Attributes => Modifier.attributeCandidates();
 
 
-  public SelectionLayerData(GeneModifier modifier, Action<GeneModifier.Mod> onSelect)
+  public SelectionLayerData(GeneModifier modifier, Action<GeneModifier.Mod> onSelect, Action<bool> onFinish)
   {
     Modifier = modifier;
     OnSelect = onSelect;
+    OnFinish = onFinish;
   }
 }
 
@@ -118,5 +120,12 @@ public class SelectorTab : YKLayout<SelectionLayerData>
         group.Text(ele.Name);
       });
     }
+
+    this.Spacer(10);
+    Button("遺伝子生成"._("Generate Gene"), () =>
+    {
+      Layer.Close();
+      Layer.Data.OnFinish(false);
+    });
   }
 }
