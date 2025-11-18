@@ -33,7 +33,7 @@ public static class Patch
     return false;
   }
 
-  private static void handleFinish(bool randomVal, GeneModifier m, Chara tc, Chara c)
+  private static void handleFinish(GeneModifier m, Chara tc, Chara c)
   {
     // https://github.com/Elin-Modding-Resources/Elin-Decompiled/blob/7517ec09aaec867bffa504b0064b37675851a609/Elin/ActEffect.cs#L2425-L2432
     if (c == tc)
@@ -59,7 +59,7 @@ public static class Patch
 
       if (!m.CanChoose())
       {
-        handleFinish(false, m, tc, c);
+        handleFinish(m, tc, c);
       }
       else
       {
@@ -67,9 +67,9 @@ public static class Patch
       }
     };
 
-    Action<bool> onFinish = randomVal =>
+    Action onFinish = () =>
     {
-      handleFinish(randomVal, m, tc, c);
+      handleFinish(m, tc, c);
     };
 
     var layerData = new SelectionLayerData(m, onSelect, onFinish);
