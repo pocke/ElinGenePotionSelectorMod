@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEngine;
 using YKF;
 
 namespace GenePotionSelector;
@@ -32,6 +33,8 @@ public class SelectorLayer : YKLayer<SelectionLayerData>
   {
     CreateTab<SelectorTab>("遺伝子に付与したい特性を選択"._("Select traits to add to the gene"), $"{ModInfo.Guid}.selector-tab");
   }
+
+  public override Rect Bound { get; } = new Rect(0, 0, 640, 800);
 
   public override void OnKill()
   {
