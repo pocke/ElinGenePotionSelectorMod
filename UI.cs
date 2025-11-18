@@ -29,7 +29,7 @@ public class SelectorLayer : YKLayer<SelectionLayerData>
 {
   public override void OnLayout()
   {
-    CreateTab<SelectorTab>("遺伝子に付与したい特性を選択"._("Select traits to add to the gene"), $"{ModInfo.Guid}.selector-tab");
+    CreateTab<SelectorTab>($"遺伝子に付与したい特性を選択(残り{Data.Modifier.Remaining()})"._($"Select traits to add to the gene (Remaining {Data.Modifier.Remaining()})"), $"{ModInfo.Guid}.selector-tab");
   }
 
   public override Rect Bound { get; } = new Rect(0, 0, 640, 800);

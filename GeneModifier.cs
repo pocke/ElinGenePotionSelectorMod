@@ -33,12 +33,17 @@ public class GeneModifier
 
   public bool CanChoose()
   {
-    if (maxMods() <= mods.Count)
+    if (Remaining() <= 0)
     {
       return false;
     }
 
     return featCandidates().Any() || abilityCandidates().Any() || slotCandidates().Any() || skillCandidates().Any() || attributeCandidates().Any();
+  }
+
+  public int Remaining()
+  {
+    return maxMods() - mods.Count;
   }
 
   public List<Element> featCandidates()
