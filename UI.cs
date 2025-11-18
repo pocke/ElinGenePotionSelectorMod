@@ -102,7 +102,7 @@ public class SelectorTab : YKLayout<SelectionLayerData>
           Layer.Close();
           Layer.Data.OnSelect(new GeneModifier.Mod { Skill = ele });
         });
-        group.Text(ele.Name);
+        group.Text(elementLabel(ele));
       });
     }
 
@@ -117,7 +117,7 @@ public class SelectorTab : YKLayout<SelectionLayerData>
           Layer.Close();
           Layer.Data.OnSelect(new GeneModifier.Mod { Attribute = ele });
         });
-        group.Text(ele.Name);
+        group.Text(elementLabel(ele));
       });
     }
 
@@ -127,5 +127,12 @@ public class SelectorTab : YKLayout<SelectionLayerData>
       Layer.Close();
       Layer.Data.OnFinish(false);
     });
+  }
+
+  private string elementLabel(Element ele)
+  {
+    var max = Layer.Data.Modifier.CurveValue(ele.ValueWithoutLink / 2);
+    var min = Layer.Data.Modifier.CurveValue(ele.ValueWithoutLink / 4);
+    return $"{ele.Name} ({min} - {max})";
   }
 }

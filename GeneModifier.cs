@@ -171,7 +171,7 @@ public class GeneModifier
         costBase = EClass.curve(Mathf.Abs(v + 100), 20, 10, 90);
       }
 
-      v = EClass.curve(v, 20, 10, 80);
+      v = CurveValue(v);
       for (int k = 0; k < dna.vals.Count; k += 2)
       {
         if (dna.vals[k] == id)
@@ -198,5 +198,10 @@ public class GeneModifier
       dna.cost = 0;
       dna.slot = 0;
     }
+  }
+
+  public int CurveValue(int v)
+  {
+    return EClass.curve(v, 20, 10, 80);
   }
 }
