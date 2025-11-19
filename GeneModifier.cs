@@ -12,6 +12,8 @@ public class GeneModifier
     public Element Feat { get; set; }
     public ActList.Item Ability { get; set; }
     public BodySlot Slot { get; set; }
+    public Element Skill { get; set; }
+    public Element Attribute { get; set; }
   }
 
   Chara chara;
@@ -29,13 +31,28 @@ public class GeneModifier
     mods.Add(mod);
   }
 
-  public bool hasCandidate()
+  public bool CanChoose()
   {
-    return featCandidates().Any() || abilityCandidates().Any() || slotCandidates().Any();
+    if (Remaining() <= 0)
+    {
+      return false;
+    }
+
+    return featCandidates().Any() || abilityCandidates().Any() || slotCandidates().Any() || skillCandidates().Any() || attributeCandidates().Any();
+  }
+
+  public int Remaining()
+  {
+    return maxMods() - mods.Count;
   }
 
   public List<Element> featCandidates()
   {
+    if (!canAddSpecial())
+    {
+      return new List<Element>();
+    }
+
     int geneSlot = mods.Any() ? mods.Max(m => m.Feat?.source?.geneSlot ?? 1) : 1;
     var ret = chara.elements.ListGeneFeats().Where(e => !mods.Any(m => m.Feat?.id == e.id));
     if (geneSlot > 1)
@@ -47,6 +64,11 @@ public class GeneModifier
 
   public List<ActList.Item> abilityCandidates()
   {
+    if (!canAddSpecial())
+    {
+      return new List<ActList.Item>();
+    }
+
     return chara.ability.list.items
       // https://github.com/Elin-Modding-Resources/Elin-Decompiled/blob/7517ec09aaec867bffa504b0064b37675851a609/Elin/DNA.cs#L337-L338
       .Where(a => a.act.source.category == "ability")
@@ -55,12 +77,37 @@ public class GeneModifier
 
   public List<BodySlot> slotCandidates()
   {
+    if (!canAddSpecial())
+    {
+      return new List<BodySlot>();
+    }
+
     if (mods.Any(m => m.Slot != null))
     {
       return new List<BodySlot>();
     }
     // https://github.com/Elin-Modding-Resources/Elin-Decompiled/blob/7517ec09aaec867bffa504b0064b37675851a609/Elin/DNA.cs#L357
     return chara.body.slots.Where(s => s.elementId != 40 && s.elementId != 44).ToList();
+  }
+
+  public List<Element> skillCandidates()
+  {
+    // https://github.com/Elin-Modding-Resources/Elin-Decompiled/blob/dc99f554451266f493eec814d9f0f9aa55cdf170/Elin/DNA.cs#L298
+    // https://github.com/Elin-Modding-Resources/Elin-Decompiled/blob/dc99f554451266f493eec814d9f0f9aa55cdf170/Elin/DNA.cs#L419
+    var skills = chara.elements.ListBestSkills();
+    return skills.Take(6).ToList();
+  }
+
+  public List<Element> attributeCandidates()
+  {
+    // https://github.com/Elin-Modding-Resources/Elin-Decompiled/blob/dc99f554451266f493eec814d9f0f9aa55cdf170/Elin/DNA.cs#L297
+    // https://github.com/Elin-Modding-Resources/Elin-Decompiled/blob/dc99f554451266f493eec814d9f0f9aa55cdf170/Elin/DNA.cs#L359
+    return chara.elements.ListBestAttributes().Take(3).ToList();
+  }
+
+  public int maxMods()
+  {
+    return type == DNA.Type.Default ? 4 : 7;
   }
 
   public void SpawnGene()
@@ -70,68 +117,91 @@ public class GeneModifier
     chara.GiveBirth(t, effect: true);
   }
 
+  private bool canAddSpecial()
+  {
+    int n = 0;
+    mods.ForEach(mod =>
+    {
+      if (mod.Ability != null || mod.Slot != null || mod.Feat != null)
+      {
+        n++;
+      }
+    });
+    return n < (type == DNA.Type.Default ? 1 : 2);
+  }
+
   void Apply(DNA dna)
   {
-    for (int i = dna.vals.Count - 1; 0 <= i; i -= 2)
-    {
-      var ele = Element.Create(dna.vals[i - 1], dna.vals[i]);
-
-      switch (ele.source.category)
-      {
-        case "slot":
-        case "feat":
-        case "ability":
-          RemoveVal(i - 1, Cost(ele));
-          break;
-      }
-    }
+    Reset();
 
     mods.ForEach(mod =>
     {
       if (mod.Feat != null)
       {
-        AddVal(mod.Feat.id, 1, Cost(mod.Feat));
+        AddVal(mod.Feat.id, 1, _ => mod.Feat.source.cost[0] * 5);
       }
       if (mod.Ability != null)
       {
-        AddVal(mod.Ability.act.id, mod.Ability.pt ? -1 : 1, Cost(mod.Ability.act));
+        AddVal(mod.Ability.act.id, mod.Ability.pt ? -1 : 1, _ => 8 + mod.Ability.act.source.cost[0] / 10 * 2);
       }
       if (mod.Slot != null)
       {
-        AddVal(mod.Slot.elementId, 1, Cost(Element.Create(mod.Slot.elementId, 1)));
+        AddVal(mod.Slot.elementId, 1, _ => 20);
+      }
+      if (mod.Skill != null)
+      {
+        // https://github.com/Elin-Modding-Resources/Elin-Decompiled/blob/dc99f554451266f493eec814d9f0f9aa55cdf170/Elin/DNA.cs#L420
+        AddVal(mod.Skill.id, EClass.rndHalf(mod.Skill.ValueWithoutLink / 2), v => v / 5 + 1);
+      }
+      if (mod.Attribute != null)
+      {
+        // https://github.com/Elin-Modding-Resources/Elin-Decompiled/blob/dc99f554451266f493eec814d9f0f9aa55cdf170/Elin/DNA.cs#L360
+        AddVal(mod.Attribute.id, EClass.rndHalf(mod.Attribute.ValueWithoutLink / 2), v => v / 5 + 1);
       }
     });
 
     dna.CalcCost();
     dna.CalcSlot();
 
-    void AddVal(int id, int v, int cost)
+    void AddVal(int id, int v, Func<int, int> funcCost)
     {
-      dna.vals.Add(id);
-      dna.vals.Add(v);
-      dna.cost += Mathf.Max(0, cost);
-    }
-
-    void RemoveVal(int i, int cost)
-    {
-      dna.vals.RemoveAt(i);
-      dna.vals.RemoveAt(i);
-      dna.cost -= cost;
-    }
-
-    int Cost(Element ele)
-    {
-      switch (ele.source.category)
+      var costBase = EClass.curve(v, 20, 10, 90);
+      if (v < -100)
       {
-        case "slot":
-          return 20;
-        case "feat":
-          return ele.source.cost[0] * 5;
-        case "ability":
-          return 8 + ele.source.cost[0] / 10 * 2;
-        default:
-          throw new Exception("Unexpected category: " + ele.source.category);
+        costBase = EClass.curve(Mathf.Abs(v + 100), 20, 10, 90);
+      }
+
+      v = CurveValue(v);
+      for (int k = 0; k < dna.vals.Count; k += 2)
+      {
+        if (dna.vals[k] == id)
+        {
+          v /= 2;
+          costBase /= 2;
+          dna.vals[k + 1] += v;
+          dna.cost += Mathf.Max(0, funcCost(costBase));
+          return;
+        }
+      }
+
+      if (v != 0)
+      {
+        dna.vals.Add(id);
+        dna.vals.Add(v);
+        dna.cost += Mathf.Max(0, funcCost(costBase));
       }
     }
+
+    void Reset()
+    {
+      dna.vals.Clear();
+      dna.cost = 0;
+      dna.slot = 0;
+    }
+  }
+
+  public int CurveValue(int v)
+  {
+    return EClass.curve(v, 20, 10, 80);
   }
 }

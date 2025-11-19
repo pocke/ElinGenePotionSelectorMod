@@ -1,24 +1,29 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEngine;
 using YKF;
 
 namespace GenePotionSelector;
 
 public class SelectionLayerData
 {
-  public List<Element> Feats { get; }
-  public List<ActList.Item> Abilities { get; }
-  public List<BodySlot> Slots { get; }
-
+  public GeneModifier Modifier { get; }
   public Action<GeneModifier.Mod> OnSelect { get; }
+  public Action OnFinish { get; }
 
-  public SelectionLayerData(List<Element> feats, List<ActList.Item> abilities, List<BodySlot> slots, Action<GeneModifier.Mod> onSelect)
+  public List<Element> Feats => Modifier.featCandidates();
+  public List<ActList.Item> Abilities => Modifier.abilityCandidates();
+  public List<BodySlot> Slots => Modifier.slotCandidates();
+  public List<Element> Skills => Modifier.skillCandidates();
+  public List<Element> Attributes => Modifier.attributeCandidates();
+
+
+  public SelectionLayerData(GeneModifier modifier, Action<GeneModifier.Mod> onSelect, Action onFinish)
   {
-    Feats = feats;
-    Abilities = abilities;
-    Slots = slots;
+    Modifier = modifier;
     OnSelect = onSelect;
+    OnFinish = onFinish;
   }
 }
 
@@ -26,8 +31,10 @@ public class SelectorLayer : YKLayer<SelectionLayerData>
 {
   public override void OnLayout()
   {
-    CreateTab<SelectorTab>("遺伝子に付与したい特性を選択"._("Select traits to add to the gene"), $"{ModInfo.Guid}.selector-tab");
+    CreateTab<SelectorTab>($"遺伝子に付与したい特性を選択(残り{Data.Modifier.Remaining()})"._($"Select traits to add to the gene (Remaining {Data.Modifier.Remaining()})"), $"{ModInfo.Guid}.selector-tab");
   }
+
+  public override Rect Bound { get; } = new Rect(0, 0, 640, 800);
 
   public override void OnKill()
   {
@@ -83,5 +90,49 @@ public class SelectorTab : YKLayout<SelectionLayerData>
         group.Text(slot.name);
       });
     }
+
+    if (Layer.Data.Skills.Count > 0)
+    {
+      HeaderSmall("スキル"._("Skills"));
+      Layer.Data.Skills.ForEach(ele =>
+      {
+        var group = Horizontal();
+        group.Button("選択"._("Select"), () =>
+        {
+          Layer.Close();
+          Layer.Data.OnSelect(new GeneModifier.Mod { Skill = ele });
+        });
+        group.Text(elementLabel(ele));
+      });
+    }
+
+    if (Layer.Data.Attributes.Count > 0)
+    {
+      HeaderSmall("主能力"._("Attributes"));
+      Layer.Data.Attributes.ForEach(ele =>
+      {
+        var group = Horizontal();
+        group.Button("選択"._("Select"), () =>
+        {
+          Layer.Close();
+          Layer.Data.OnSelect(new GeneModifier.Mod { Attribute = ele });
+        });
+        group.Text(elementLabel(ele));
+      });
+    }
+
+    this.Spacer(10);
+    Button("遺伝子生成"._("Generate Gene"), () =>
+    {
+      Layer.Close();
+      Layer.Data.OnFinish();
+    });
+  }
+
+  private string elementLabel(Element ele)
+  {
+    var max = Layer.Data.Modifier.CurveValue(ele.ValueWithoutLink / 2) - 1;
+    var min = Layer.Data.Modifier.CurveValue(ele.ValueWithoutLink / 4);
+    return $"{ele.Name} ({min} - {max})";
   }
 }
