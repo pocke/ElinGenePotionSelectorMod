@@ -131,7 +131,7 @@ public class SelectorTab : YKLayout<SelectionLayerData>
 
   private string elementLabel(Element ele)
   {
-    var max = Layer.Data.Modifier.CurveValue(ele.ValueWithoutLink / 2);
+    var max = Layer.Data.Modifier.CurveValue(ele.ValueWithoutLink / 2) - 1;
     var min = Layer.Data.Modifier.CurveValue(ele.ValueWithoutLink / 4);
     return $"{ele.Name} ({min} - {max})";
   }
