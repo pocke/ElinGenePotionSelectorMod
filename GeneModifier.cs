@@ -70,8 +70,8 @@ public class GeneModifier
     }
 
     return chara.ability.list.items
-      // https://github.com/Elin-Modding-Resources/Elin-Decompiled/blob/7517ec09aaec867bffa504b0064b37675851a609/Elin/DNA.cs#L337-L338
-      .Where(a => a.act.source.category == "ability")
+      // https://github.com/Elin-Modding-Resources/Elin-Decompiled/blob/6413215f4c59899e80dc892f79cb80e5acdc617c/Elin/DNA.cs#L349
+      .Where(a => a.act.source.category == "ability" && a.act.source.geneSlot >= 0)
       .Where(a => !mods.Any(m => m.Ability?.act?.id == a.act.id)).ToList();
   }
 
@@ -142,7 +142,7 @@ public class GeneModifier
       }
       if (mod.Ability != null)
       {
-        AddVal(mod.Ability.act.id, mod.Ability.pt ? -1 : 1, _ => 8 + mod.Ability.act.source.cost[0] / 10 * 2);
+        AddVal(mod.Ability.act.id, mod.Ability.chance * (mod.Ability.pt ? -1 : 1), _ => 8 + mod.Ability.act.source.cost[0] / 10 * 2);
       }
       if (mod.Slot != null)
       {
