@@ -142,7 +142,7 @@ public class GeneModifier
       }
       if (mod.Ability != null)
       {
-        AddVal(mod.Ability.act.id, mod.Ability.pt ? -1 : 1, _ => 8 + mod.Ability.act.source.cost[0] / 10 * 2);
+        AddVal(mod.Ability.act.id, mod.Ability.chance * (mod.Ability.pt ? -1 : 1), _ => 8 + mod.Ability.act.source.cost[0] / 10 * 2);
       }
       if (mod.Slot != null)
       {
