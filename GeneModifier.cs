@@ -165,10 +165,10 @@ public class GeneModifier
 
     void AddVal(int id, int v, Func<int, int> funcCost)
     {
-      var costBase = EClass.curve(v, 20, 10, 90);
+      var costBase = CurveWrapper.curve(v, 20, 10, 90);
       if (v < -100)
       {
-        costBase = EClass.curve(Mathf.Abs(v + 100), 20, 10, 90);
+        costBase = CurveWrapper.curve(Mathf.Abs(v + 100), 20, 10, 90);
       }
 
       v = CurveValue(v);
@@ -202,6 +202,6 @@ public class GeneModifier
 
   public int CurveValue(int v)
   {
-    return EClass.curve(v, 20, 10, 80);
+    return CurveWrapper.curve(v, 20, 10, 80);
   }
 }
